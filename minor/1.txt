@@ -1,0 +1,343 @@
+            if 'lr' not in st.session_state:
+                st.session_state.lr=0
+            if 'dt' not in st.session_state:
+                st.session_state.dt=0
+            if 'knn' not in st.session_state:
+                st.session_state.knn=0
+            if 'gnb' not in st.session_state:
+                st.session_state.gnb=0
+            if 'svm' not in st.session_state:
+                st.session_state.svm=0
+            if 'rf' not in st.session_state:
+                st.session_state.rf=0
+            if 'gb' not in st.session_state:
+                st.session_state.gb=0
+            if 'high' not in st.session_state:
+                st.session_state.high=0
+            if 'lr1' not in st.session_state:
+                st.session_state.lr1=0
+            if 'dt1' not in st.session_state:
+                st.session_state.dt1=0
+            if 'knn1' not in st.session_state:
+                st.session_state.knn1=0
+            if 'gnb1' not in st.session_state:
+                st.session_state.gnb1=0
+            if 'svm1' not in st.session_state:
+                st.session_state.svm1=0
+            if 'rf1' not in st.session_state:
+                st.session_state.rf1=0
+            if 'gb1' not in st.session_state:
+                st.session_state.gb1=0
+            if 'high1' not in st.session_state:
+                st.session_state.high1=0
+            lr=st.session_state.lr
+            dt=st.session_state.dt
+            knn=st.session_state.knn
+            gnb=st.session_state.gnb
+            svm=st.session_state.svm
+            rf=st.session_state.rf
+            gb=st.session_state.gb
+            high=st.session_state.high
+            lr1=st.session_state.lr1
+            dt1=st.session_state.dt1
+            knn1=st.session_state.knn1
+            gnb1=st.session_state.gnb1
+            svm1=st.session_state.svm1
+            rf1=st.session_state.rf1
+            gb1=st.session_state.gb1
+            high1=st.session_state.high1
+
+        column_desc = {
+                        'Gender': 'Gender of the applicant',
+                        'Married': 'Marital status of the applicant',
+                        'Education': 'Education level of the applicant',
+                        'Self_Employed': 'Self-employment status of the applicant',
+                        'Property_Area': 'Location of the property',
+                        'ApplicantIncome': 'Income of the applicant in dollars',
+                        'Dependents': 'Number of dependents of the applicant',
+                        'CoapplicantIncome': 'Income of the co-applicant in dollars (if any)',
+                        'LoanAmount': 'Loan amount in dollars',
+                        'Loan_Amount_Term': 'Term of the loan in months',
+                        'Credit_History': 'Credit history of the applicant: 1 denotes a good credit history, 0 denotes a poor credit history'
+                    }
+
+        # Display the column descriptions
+        st.write('Please provide the following information:')
+        for col in column_desc:
+            st.write(f'{col}: {column_desc[col]}')
+        if st.checkbox('Lets start the prediction'):
+            # Create a dictionary to encode categorical variables
+            encoder_dict = {'Male': 1, 'Female': 0, 'Yes': 1, 'No': 0, 
+                                                'Graduate': 1, 'Not Graduate': 0, 'Urban': 2, 
+                                                'Semiurban': 1, 'Rural': 0}
+
+                            # Create a list of column names in the correct order
+            column_order = ['Gender', 'Married', 'Dependents', 'Education', 'Self_Employed',
+                                                'ApplicantIncome', 'CoapplicantIncome', 'LoanAmount',
+                                                'Loan_Amount_Term', 'Credit_History', 'Property_Area']
+
+                            # Create a function to transform the user input
+            def transform_input(user_input):
+                                    # Convert the user input into a DataFrame
+                user_input_df = pd.DataFrame(user_input, index=[0])
+
+                                    # Replace categorical values with numerical codes using the encoder dictionary
+                user_input_encoded = user_input_df.replace(encoder_dict)
+
+                                    # Reorder the columns to match the original dataset
+                user_input_ordered = user_input_encoded[column_order]
+
+                                    # Standardize the numerical columns
+                num_cols = ['ApplicantIncome', 'CoapplicantIncome', 'LoanAmount', 'Loan_Amount_Term']
+                scaler = StandardScaler()
+                user_input_ordered[num_cols] = scaler.fit_transform(user_input_ordered[num_cols])
+
+                return user_input_ordered
+
+                                # Create a Streamlit app
+                    
+
+                                # Collect user inputs
+            st.subheader('Enter Applicant Information')
+            gender = st.radio('Gender', ['Male', 'Female'])
+            married = st.radio('Marital Status', ['Yes', 'No'])
+            dependents = st.slider('Number of Dependents', 0, 3, 0)
+            education = st.radio('Education', ['Graduate', 'Not Graduate'])
+            employed = st.radio('Employment', ['Yes', 'No'])
+            income = st.number_input('Applicant Income', min_value=0)
+            co_income = st.number_input('Co-Applicant Income', min_value=0)
+            loan_amount = st.number_input('Loan Amount', min_value=0)
+            term = st.number_input('Loan Amount Term (in months)', min_value=0)
+            credit_history = st.slider('Credit History (0 = No, 1 = Yes)', 0, 1, 0)
+            property_area = st.selectbox('Property Area', ['Urban', 'Semiurban', 'Rural'])
+
+                                # Store user inputs as a dictionary
+            user_input = {'Gender': gender, 'Married': married, 'Dependents': dependents, 'Education': education,
+                                            'Self_Employed': employed, 'ApplicantIncome': income, 'CoapplicantIncome': co_income,
+                                            'LoanAmount': loan_amount, 'Loan_Amount_Term': term, 'Credit_History': credit_history,
+                                            'Property_Area': property_area}
+
+                                # Transform user input into a format that can be used by the model
+            user_input_transformed = transform_input(user_input)
+
+
+                
+            models=['',
+                                                    'LogisticRegression',
+                                                    'DecisionTreeClassifier',
+                                                    'KNeighborsClassifier',
+                                                    'GaussianNB',
+                                                    'SVC',
+                                                    'RandomForestClassifier',
+                                                    
+                                                    'GradientBoostingClassifier'
+                                                ]
+            d={'':'',
+                                                    'Logistic Regression':'lr',
+                                                    'Decision Tree':'dt',
+                                                    'K-Nearest Neighbors':'knn',
+                                                    'Gaussian Navie Bayes':'gnb',
+                                                    'Support Vector Machine':'svm',
+                                                    'Random Forest':'rf',
+                                                    
+                                                    'GradientBoostingClassifier':'gb'}
+            #selection=st.selectbox('Choose the following model for predicting result using normal models',models)
+            result=d[high]
+                
+            if st.checkbox('Prediction is done by taking the normal algorithm which has high accuracy score'):
+                if result=='':
+                    pass
+                elif result=='lr':
+                    if st.button('Predict'):
+                                        
+                        prediction=lr.predict(user_input_transformed)
+                        if prediction[0]=='Y':
+                            st.write('Congratulations! Your eligible for a loan')
+                            st.image('approved.jpg',width=200)
+                            st.audio('eligible.mp3', format='audio/mp3')
+                            st.balloons()
+                        else:
+                            st.write('Sorry, your loan application has been rejected.')
+                            st.image('rejected.jpg',width=200)
+                            st.audio('rejection.mp3', format='audio/mp3')
+                elif result=='dt':
+                    if st.button('Result'):
+                        prediction=dt.predict(user_input_transformed)
+                        if prediction[0]=='Y':
+                            st.write('Congratulations! Your eligible for a loan')
+                            st.image('approved.jpg',width=200)
+                            st.audio('eligible.mp3', format='audio/mp3')
+                            st.balloons()
+                        else:
+                            st.write('Sorry, your loan application has been rejected.')
+                            st.image('rejected.jpg',width=200)
+                            st.audio('rejection.mp3', format='audio/mp3')
+                elif result=='knn':
+                    if st.button('Click to see the result'):
+                        prediction=knn.predict(user_input_transformed)
+                        if prediction[0]=='Y':
+                            st.write('Congratulations! Your eligible for a loan')
+                            st.image('approved.jpg',width=200)
+                            st.audio('eligible.mp3', format='audio/mp3')
+                            st.balloons()
+                        else:
+                            st.write('Sorry, your loan application has been rejected.')
+                            st.image('rejected.jpg',width=200)
+                            st.audio('rejection.mp3', format='audio/mp3')
+                elif result=='gnb':
+                    if st.button('Press to see the result'):
+                        prediction=gnb.predict(user_input_transformed)
+                        if prediction[0]=='Y':
+                            st.write('Congratulations! Your eligible for a loan')
+                            st.image('approved.jpg',width=200)
+                            st.audio('eligible.mp3', format='audio/mp3')
+                            st.balloons()
+                        else:
+                            st.write('Sorry, your loan application has been rejected.')
+                            st.image('rejected.jpg',width=200)
+                            st.audio('rejection.mp3', format='audio/mp3')
+                elif result=='svm':
+                    if st.button('Hit karo bhai!'):
+                        prediction=svm.predict(user_input_transformed)
+                        if prediction[0]=='Y':
+                            st.write('Congratulations! Your eligible for a loan')
+                            st.image('approved.jpg',width=200)
+                            st.audio('eligible.mp3', format='audio/mp3')
+                            st.balloons()
+                        else:
+                            st.write('Sorry, your loan application has been rejected.')
+                            st.image('rejected.jpg',width=200)
+                            st.audio('rejection.mp3', format='audio/mp3')
+                elif result=='rf':
+                    if st.button('Answer'):
+                        prediction=rf.predict(user_input_transformed)
+                        if prediction[0]=='Y':
+                                st.write('Congratulations! Your eligible for a loan')
+                                st.image('approved.jpg',width=200)
+                                st.audio('eligible.mp3', format='audio/mp3')
+                                st.balloons()
+                            else:
+                                st.write('Sorry, your loan application has been rejected.')
+                                st.image('rejected.jpg',width=200)
+                                st.audio('rejection.mp3', format='audio/mp3')
+                elif result=='gb':
+                    if st.button('Forecast'):
+                        prediction=gb.predict(user_input_transformed)
+                        if prediction[0]=='Y':
+                            st.write('Congratulations! Your eligible for a loan')
+                            st.image('approved.jpg',width=200)
+                            st.audio('eligible.mp3', format='audio/mp3')
+                            st.balloons()
+                        else:
+                            st.write('Sorry, your loan application has been rejected.')
+                            st.image('rejected.jpg',width=200)
+                            st.audio('rejection.mp3', format='audio/mp3')
+                else:
+                    pass
+                        
+                        
+               
+               
+
+                d1={'':'',
+                                                    'Logistic Regression':'lr1',
+                                                    'Decision Tree':'dt1',
+                                                    'K-Nearest Neighbors':'knn1',
+                                                    'Gaussian Navie Bayes':'gnb1',
+                                                    'Support Vector Machine':'svm1',
+                                                    'Random Forest':'rf1',
+                                                    
+                                                    'GradientBoostingClassifier':'gb1'}
+                #selection1=st.selectbox('Choose the following model for predicting result using parameter models',models)
+                result1=d1[high1]
+                if st.checkbox('Prediction is done by taking the parameterised algorithm which has high accuracy score'):
+                    if result1=='':
+                        pass
+                    elif result1=='lr1':
+                        if st.button('Predict1'):
+                                    
+                            prediction=lr1.predict(user_input_transformed)
+                            if prediction[0]=='Y':
+                                st.write('Congratulations! Your eligible for a loan')
+                                st.image('approved.jpg',width=200)
+                                st.audio('eligible.mp3', format='audio/mp3')
+                                st.balloons()
+                            else:
+                                st.write('Sorry, your loan application has been rejected.')
+                                st.image('rejected.jpg',width=200)
+                                st.audio('rejection.mp3', format='audio/mp3')
+                    elif result1=='dt1':
+                        if st.button('Result1'):
+                            prediction=dt1.predict(user_input_transformed)
+                            if prediction[0]=='Y':
+                                st.write('Congratulations! Your eligible for a loan')
+                                st.image('approved.jpg',width=200)
+                                st.audio('eligible.mp3', format='audio/mp3')
+                                st.balloons()
+                            else:
+                                st.write('Sorry, your loan application has been rejected.')
+                                st.image('rejected.jpg',width=200)
+                                st.audio('rejection.mp3', format='audio/mp3')
+                    elif result1=='knn1':
+                        if st.button('Click to see the result-1'):
+                            prediction=knn1.predict(user_input_transformed)
+                            if prediction[0]=='Y':
+                                st.write('Congratulations! Your eligible for a loan')
+                                st.image('approved.jpg',width=200)
+                                st.audio('eligible.mp3', format='audio/mp3')
+                                st.balloons()
+                            else:
+                                st.write('Sorry, your loan application has been rejected.')
+                                st.image('rejected.jpg',width=200)
+                                st.audio('rejection.mp3', format='audio/mp3')
+                    elif result1=='gnb1':
+                        if st.button('Press to see the result-1'):
+                            prediction=gnb1.predict(user_input_transformed)
+                            if prediction[0]=='Y':
+                                st.write('Congratulations! Your eligible for a loan')
+                                st.image('approved.jpg',width=200)
+                                st.audio('eligible.mp3', format='audio/mp3')
+                                st.balloons()
+                            else:
+                                st.write('Sorry, your loan application has been rejected.')
+                                st.image('rejected.jpg',width=200)
+                                st.audio('rejection.mp3', format='audio/mp3')
+                    elif result1=='svm1':
+                        if st.button('Hit karo bhai!-1'):
+                            prediction=svm1.predict(user_input_transformed)
+                            if prediction[0]=='Y':
+                                st.write('Congratulations! Your eligible for a loan')
+                                st.image('approved.jpg',width=200)
+                                st.audio('eligible.mp3', format='audio/mp3')
+                                st.balloons()
+                            else:
+                                st.write('Sorry, your loan application has been rejected.')
+                                st.image('rejected.jpg',width=200)
+                                st.audio('rejection.mp3', format='audio/mp3')
+                    elif result1=='rf1':
+                        if st.button('Answer-1'):
+                            prediction=rf1.predict(user_input_transformed)
+                            if prediction[0]=='Y':
+                                st.write('Congratulations! Your eligible for a loan')
+                                st.image('approved.jpg',width=200)
+                                st.audio('eligible.mp3', format='audio/mp3')
+                                st.balloons()
+                            else:
+                                st.write('Sorry, your loan application has been rejected.')
+                                st.image('rejected.jpg',width=200)
+                                st.audio('rejection.mp3', format='audio/mp3')
+                    elif result1=='gb1':
+                        if st.button('Forecast-1'):
+                            prediction=gb1.predict(user_input_transformed)
+                            if prediction[0]=='Y':
+                                st.write('Congratulations! Your eligible for a loan')
+                                st.image('approved.jpg',width=200)
+                                st.audio('eligible.mp3', format='audio/mp3')
+                                st.balloons()
+                            else:
+                                st.write('Sorry, your loan application has been rejected.')
+                                st.image('rejected.jpg',width=200)
+                                st.audio('rejection.mp3', format='audio/mp3')
+                    
+                    else:
+                        pass
